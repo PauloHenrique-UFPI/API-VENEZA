@@ -11,9 +11,9 @@ export class UsuarioController {
     async create(req: Request, res: Response){
         //cria usuario
 
-        const { email, telefone, dataNascimento, senha, cep, endereco } = req.body;
+        const { email, telefone, dataNascimento, senha, cep, endereco, tipo } = req.body;
 
-        if (!email || !telefone || !dataNascimento || !senha || !cep || !endereco ){
+        if (!email || !telefone || !dataNascimento || !senha || !cep || !endereco || !tipo ){
             return res.status(400).json({ message: "Todos os campos são Obrigatorios !"})
         }
 
@@ -36,7 +36,8 @@ export class UsuarioController {
                 dataNascimento: dataNascimento, 
                 senha: hashP, 
                 cep: cep, 
-                endereco: endereco
+                endereco: endereco,
+                tipo: tipo
             })
 
             await userRepositorie.save(newUser);

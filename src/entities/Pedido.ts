@@ -28,4 +28,7 @@ export class Pedido {
 
     @Column()
     contato: string
+
+    @Column()
+    status: string
 }

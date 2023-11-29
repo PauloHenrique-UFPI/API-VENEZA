@@ -6,9 +6,9 @@ import 'dotenv/config'
 export class PedidoController {
 
     async create(req: Request, res: Response) {
-        const { tipo, tamanho, complemento, preco, troco, endereco, nomeCliente, contato } = req.body
+        const { tipo, tamanho, complemento, preco, troco, endereco, nomeCliente, contato, status } = req.body
 
-        if (!tipo || !tamanho || !complemento || !preco || !troco || !endereco || !nomeCliente || !contato ) {
+        if (!tipo || !tamanho || !complemento || !preco || !troco || !endereco || !nomeCliente || !contato || !status ) {
             return res.status(400).json({ message: "Todos os campos são obrigatorios"})
         }
 
@@ -21,7 +21,8 @@ export class PedidoController {
                 troco: troco, 
                 endereco: endereco,
                 nomeCliente: nomeCliente,
-                contato:contato
+                contato:contato,
+                status: status
             })
 
             await pedidoRepositorie.save(novo);

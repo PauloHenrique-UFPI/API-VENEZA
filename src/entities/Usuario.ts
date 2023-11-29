@@ -22,4 +22,7 @@ export class Usuario {
 
     @Column()
     endereco: string
+
+    @Column()
+    tipo: string
 }
