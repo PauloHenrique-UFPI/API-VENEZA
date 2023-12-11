@@ -7,8 +7,9 @@ import { PedidoController } from "./controllers/PedidoControllers";
 const routes = Router();
 
 //Rotas de Usuario
-routes.post('/criar',new UsuarioController().create)
+routes.post('/criar', new UsuarioController().create)
 routes.post('/login', new UsuarioController().login)
+routes.get('/todos', authMiddleware, new UsuarioController().contatos)
 routes.delete('/deletar-usuario/:id', authMiddleware, new UsuarioController().delete)
 
 //Rotas de Pedido

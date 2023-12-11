@@ -55,6 +55,27 @@ export class UsuarioController {
       
     }
 
+    async contatos(req: Request, res: Response){
+      try{
+          const contatos = await userRepositorie.find();
+          res.json({
+           
+            groups: contatos.map((contato) => {
+              return {
+                ...contato,
+                senha: undefined,
+                valid_sign: undefined,
+                created_at: undefined
+              }
+            }),
+          })
+      } catch(error) {
+          console.log(error);
+          return res.status(500).json({message: "Erro no servidor"})
+          
+      }
+  }
+
 
     async login(req: Request, res: Response) {
 
