@@ -16,13 +16,14 @@ export class PizzaController {
             return res.status(400).json({ message: "Todos os campos são obrigatorio"})
         }
 
+        const boolValor = JSON.parse(promocao.toLowerCase());
         try {
             const novo = pizzaRepositorie.create({
                 img: firebaseUrl,
                 sabor: sabor,
                 ingredientes: ingredientes,
                 preco: preco,
-                promocao: promocao
+                promocao: boolValor
             })
 
             await pizzaRepositorie.save(novo);
@@ -41,12 +42,14 @@ export class PizzaController {
     async alter(req: Request, res: Response) {
         const id = parseInt(req.params.id, 10);
         const corpo = req.body;
-        const { img, ...dadosParaAtualizar } = corpo;
+        const { img, promocao, ...dadosParaAtualizar } = corpo;
     
         const imgT = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
+        console.log(promocao)
+        const boolValor = JSON.parse(promocao.toLowerCase());
     
         try {
-            if (Object.keys(dadosParaAtualizar).length === 0 && !imgT) {
+            if (Object.keys(dadosParaAtualizar).length === 0 && !imgT && !boolValor) {
                 return res.status(400).json({ message: "Nenhum dado para atualizar" });
             }
     
@@ -56,6 +59,9 @@ export class PizzaController {
             }
             if (imgT) {
                 updateValues.img = imgT;
+            }
+            if (boolValor) {
+                updateValues.promocao = boolValor;
             }
     
             const result = await pizzaRepositorie.update(id, updateValues);
