@@ -23,6 +23,8 @@ routes.post('/criar', new UsuarioController().create)
 routes.post('/login', new UsuarioController().login)
 routes.get('/todos', authMiddleware, new UsuarioController().contatos)
 routes.delete('/deletar-usuario/:id', authMiddleware, new UsuarioController().delete)
+routes.post('/esqueci', new UsuarioController().enviarEmailRedefinicao)
+routes.post('/trocarSenha', new UsuarioController().resetarSenha)
 
 //Rotas de Pedido
 routes.post('/criar-pedido', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().create)

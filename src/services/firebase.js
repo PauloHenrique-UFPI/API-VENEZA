@@ -27,12 +27,12 @@ const uploadImage = (req, res, next) => {
       metadata: {
         contentType: image.mimetype,
       },
-      resumable: false, // Adicione essa linha se necessário
+      resumable: false, 
     });
   
     stream.on("error", (e) => {
       console.error(e);
-      next(e); // Passe o erro para o próximo middleware
+      next(e); 
     });
   
     stream.on("finish", async () => {
