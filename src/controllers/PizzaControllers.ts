@@ -38,30 +38,37 @@ export class PizzaController {
         }
     }
 
-    async alter(req: Request, res: Response){
-        const id  = parseInt(req.params.id, 10);
-        const corpo = req.body
+    async alter(req: Request, res: Response) {
+        const id = parseInt(req.params.id, 10);
+        const corpo = req.body;
         const { img, ...dadosParaAtualizar } = corpo;
     
         const imgT = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
-        
-        try{
-            const result = await pizzaRepositorie.update(id, dadosParaAtualizar);
-
-            if (result.affected === 0) {
-            return res.status(404).json({ message: "Pizza não encontrada" });
-            }
-
-            if (imgT) {
-                await pizzaRepositorie.update(id, { img: imgT });
+    
+        try {
+            if (Object.keys(dadosParaAtualizar).length === 0 && !imgT) {
+                return res.status(400).json({ message: "Nenhum dado para atualizar" });
             }
     
-
+            const updateValues: { [key: string]: any } = {};
+            if (Object.keys(dadosParaAtualizar).length > 0) {
+                Object.assign(updateValues, dadosParaAtualizar);
+            }
+            if (imgT) {
+                updateValues.img = imgT;
+            }
+    
+            const result = await pizzaRepositorie.update(id, updateValues);
+    
+            if (result.affected === 0) {
+                return res.status(404).json({ message: "Pizza não encontrada" });
+            }
+    
             return res.json({ message: "Pizza atualizada com sucesso" });
-        } catch (error){
+        } catch (error) {
             console.log(error);
             return res.status(500).json({
-            message: "erro interno",
+                message: "Erro interno",
             });
         }
     }
@@ -135,4 +142,21 @@ export class PizzaController {
             })
         }
     }
+
+    async delete(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const deleted = await pizzaRepositorie.delete({ id:id })
+            if (deleted.affected === 0) {
+            return res.status(404).json({ message: "Pizza não encontrada" })
+            }
+            return res.json({ message: "Pizza deletada" })
+        }
+        catch (error) {
+          console.log(error);
+          return res.status(500).json({
+            message: "erro interno",
+          });
+        }
+      }
 }

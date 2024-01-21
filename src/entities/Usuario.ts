@@ -23,6 +23,6 @@ export class Usuario {
     @Column()
     endereco: string
 
-    @Column()
+    @Column({nullable: true})
     tipo: string
 }

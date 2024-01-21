@@ -2,18 +2,25 @@ import { Request, Response } from "express";
 import { pedidoRepositorie } from "../repositories/PedidoRepositorie"; 
 import 'dotenv/config'
 
+interface UploadedFile extends Express.Multer.File {
+    firebaseUrl?: string;
+  }
 
 export class PedidoController {
 
     async create(req: Request, res: Response) {
-        const { tipo, tamanho, complemento, preco, troco, endereco, nomeCliente, contato, status } = req.body
+        const { qtd ,tipo, tamanho, complemento, preco, troco, endereco, nomeCliente, contato, status } = req.body
+        const firebaseUrl = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
 
-        if (!tipo || !tamanho || !complemento || !preco || !troco || !endereco || !nomeCliente || !contato || !status ) {
+        if (!qtd || !tipo || !tamanho || !complemento || !preco || !troco || !endereco || !nomeCliente || !contato || !status ) {
+            console.log(req.body)
             return res.status(400).json({ message: "Todos os campos são obrigatorios"})
         }
+        
 
         try {
             const novo = pedidoRepositorie.create({
+                qtd: qtd,
                 tipo: tipo,
                 tamanho: tamanho,
                 complemento: complemento,
@@ -22,7 +29,8 @@ export class PedidoController {
                 endereco: endereco,
                 nomeCliente: nomeCliente,
                 contato:contato,
-                status: status
+                status: status,
+                img: firebaseUrl
             })
 
             await pedidoRepositorie.save(novo);
@@ -42,19 +50,34 @@ export class PedidoController {
     async alter(req: Request, res: Response){
         const id  = parseInt(req.params.id, 10);
         const corpo = req.body
+        const { img, ...dadosParaAtualizar } = corpo;
+
+        const imgT = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
         
-        try{
-            const result = await pedidoRepositorie.update(id, corpo );
-
-            if (result.affected === 0) {
-            return res.status(404).json({ message: "Pedido não encontrado" });
+        try {
+            if (Object.keys(dadosParaAtualizar).length === 0 && !imgT) {
+                return res.status(400).json({ message: "Nenhum dado para atualizar" });
             }
-
+    
+            const updateValues: { [key: string]: any } = {};
+            if (Object.keys(dadosParaAtualizar).length > 0) {
+                Object.assign(updateValues, dadosParaAtualizar);
+            }
+            if (imgT) {
+                updateValues.img = imgT;
+            }
+    
+            const result = await pedidoRepositorie.update(id, updateValues);
+    
+            if (result.affected === 0) {
+                return res.status(404).json({ message: "Pedido não encontrado" });
+            }
+    
             return res.json({ message: "Pedido atualizado com sucesso" });
-        } catch (error){
+        } catch (error) {
             console.log(error);
             return res.status(500).json({
-            message: "erro interno",
+                message: "Erro interno",
             });
         }
     }

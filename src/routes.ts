@@ -25,10 +25,10 @@ routes.get('/todos', authMiddleware, new UsuarioController().contatos)
 routes.delete('/deletar-usuario/:id', authMiddleware, new UsuarioController().delete)
 
 //Rotas de Pedido
-routes.post('/criar-pedido', authMiddleware, new PedidoController().create)
+routes.post('/criar-pedido', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().create)
 routes.get('/todos-pedidos', authMiddleware, new PedidoController().pedidos)
 routes.get('/unico-pedido/:id', authMiddleware, new PedidoController().pedidoId)
-routes.put('/alterar-pedido/:id', authMiddleware, new PedidoController().alter)
+routes.put('/alterar-pedido/:id', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().alter)
 routes.delete('/deletar-pedido/:id', authMiddleware, new PedidoController().delete)
 
 //Rotas de Pizza
@@ -36,8 +36,8 @@ routes.post('/criar-pizza', authMiddleware, Multer.single('img'), uploadImage ,n
 routes.get('/todas-pizza', authMiddleware, new PizzaController().pizzas)
 routes.get('/pizza-promocao', authMiddleware, new PizzaController().promocao)
 routes.get('/unica-pizza/:id', authMiddleware, new PizzaController().pizzaID)
-// routes.put('/alterar-pizza/:id', authMiddleware, new PizzaController().alter)
-// routes.delete('/deletar-pizza/:id', authMiddleware, new PizzaController().delete)
+routes.put('/alterar-pizza/:id', authMiddleware,  Multer.single('img'), uploadImage, new PizzaController().alter)
+routes.delete('/deletar-pizza/:id', authMiddleware, new PizzaController().delete)
 
 
 export default routes

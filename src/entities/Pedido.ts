@@ -6,6 +6,9 @@ export class Pedido {
     id: number
 
     @Column()
+    qtd: number
+
+    @Column()
     tipo: string
 
     @Column()
@@ -14,7 +17,7 @@ export class Pedido {
     @Column()
     complemento: string
 
-    @Column()
+    @Column({nullable: true})
     preco: string
 
     @Column()
@@ -31,4 +34,7 @@ export class Pedido {
 
     @Column()
     status: string
+
+    @Column({nullable: true})
+    img: string
 }
