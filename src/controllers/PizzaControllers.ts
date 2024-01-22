@@ -45,8 +45,8 @@ export class PizzaController {
         const { img, promocao, ...dadosParaAtualizar } = corpo;
     
         const imgT = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
-        console.log(promocao)
-        const boolValor = JSON.parse(promocao.toLowerCase());
+       
+        
     
         try {
             if (Object.keys(dadosParaAtualizar).length === 0 && !imgT && !boolValor) {
@@ -60,7 +60,8 @@ export class PizzaController {
             if (imgT) {
                 updateValues.img = imgT;
             }
-            if (boolValor) {
+            if (promocao) {
+                const boolValor = JSON.parse(promocao.toLowerCase());
                 updateValues.promocao = boolValor;
             }
     
