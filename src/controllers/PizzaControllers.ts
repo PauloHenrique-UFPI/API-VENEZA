@@ -81,7 +81,6 @@ export class PizzaController {
 
     async pizzas(req: Request, res: Response) {
         try {
-            const novo = pizzaRepositorie.find();
 
             const pizza = await pizzaRepositorie.find();
             res.json({
