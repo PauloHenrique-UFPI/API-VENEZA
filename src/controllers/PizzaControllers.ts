@@ -81,10 +81,8 @@ export class PizzaController {
 
     async pizzas(req: Request, res: Response) {
         try {
-
             const pizza = await pizzaRepositorie.find();
             res.json({
-
                 groups: pizza.map((pizza) => {
                     return {
                     ...pizza,
@@ -106,21 +104,11 @@ export class PizzaController {
                     promocao: true
                 }
             });
-            console.log(pizzas)
             if (pizzas.length > 0) {
                 res.json(pizzas);
             } else {
                 res.status(404).json({ message: 'Nenhuma pizza em promoção encontrada' });
-            }
-            
-            console.log(pizzas);
-            
-            if (pizzas.length > 0) {
-                res.json(pizzas);
-            } else {
-                res.json({ message: 'Nenhuma pizza em promoção encontrada' });
-            }
-            
+            }   
         } catch (error) {
             console.log(error);
             return res.status(500).json({
