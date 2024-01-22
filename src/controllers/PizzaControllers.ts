@@ -49,7 +49,7 @@ export class PizzaController {
         
     
         try {
-            if (Object.keys(dadosParaAtualizar).length === 0 && !imgT && !boolValor) {
+            if (Object.keys(dadosParaAtualizar).length === 0 && !imgT && !promocao) {
                 return res.status(400).json({ message: "Nenhum dado para atualizar" });
             }
     
