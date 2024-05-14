@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { pizzaRepositorie } from "../repositories/PizzaRepositorie";
-
 interface UploadedFile extends Express.Multer.File {
     firebaseUrl?: string;
   }
@@ -27,7 +26,7 @@ export class PizzaController {
             })
 
             await pizzaRepositorie.save(novo);
-            return res.json({
+            return res.status(201).json({
                 message: "Pizza cadastrada com sucesso !"
             });
 
@@ -45,9 +44,7 @@ export class PizzaController {
         const { img, promocao, ...dadosParaAtualizar } = corpo;
     
         const imgT = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
-       
         
-    
         try {
             if (Object.keys(dadosParaAtualizar).length === 0 && !imgT && !promocao) {
                 return res.status(400).json({ message: "Nenhum dado para atualizar" });
@@ -61,8 +58,7 @@ export class PizzaController {
                 updateValues.img = imgT;
             }
             if (promocao) {
-                const boolValor = JSON.parse(promocao.toLowerCase());
-                updateValues.promocao = boolValor;
+                updateValues.promocao = JSON.parse(promocao.toLowerCase());;
             }
     
             const result = await pizzaRepositorie.update(id, updateValues);

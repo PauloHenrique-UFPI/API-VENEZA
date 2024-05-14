@@ -46,7 +46,7 @@ export class UsuarioController {
             })
 
             await userRepositorie.save(newUser);
-            return res.json({
+            return res.status(201).json({
                 message: "Usuário criado !",
               });
             

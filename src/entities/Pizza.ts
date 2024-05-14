@@ -14,7 +14,7 @@ export class Pizza {
     @Column()
     ingredientes: string
 
-    @Column()
+    @Column({ type: 'float' })
     preco: number
 
     @Column()

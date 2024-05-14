@@ -6,6 +6,7 @@ import { storage } from "firebase-admin";
 import { PizzaController } from "./controllers/PizzaControllers";
 
 import multer from 'multer';
+import { BebidaController } from "./controllers/BebidaControllers";
 const uploadImage = require("./services/firebase");
 
 const Multer = multer({
@@ -40,6 +41,13 @@ routes.get('/pizza-promocao', new PizzaController().promocao)
 routes.get('/unica-pizza/:id', authMiddleware, new PizzaController().pizzaID)
 routes.put('/alterar-pizza/:id', authMiddleware,  Multer.single('img'), uploadImage, new PizzaController().alter)
 routes.delete('/deletar-pizza/:id', authMiddleware, new PizzaController().delete)
+
+//Rotas de bebidas
+routes.post('/criar-bebida', authMiddleware, Multer.single('img'), uploadImage ,new BebidaController().create)
+routes.get('/todas-bebida', new BebidaController().bebidas)
+routes.get('/unica-bebida/:id', authMiddleware, new BebidaController().bebidaID)
+routes.put('/alterar-bebida/:id', authMiddleware,  Multer.single('img'), uploadImage, new BebidaController().alter)
+routes.delete('/deletar-bebida/:id', authMiddleware, new BebidaController().delete)
 
 
 export default routes

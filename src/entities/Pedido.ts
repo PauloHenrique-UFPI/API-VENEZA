@@ -17,10 +17,10 @@ export class Pedido {
     @Column()
     complemento: string
 
-    @Column({nullable: true})
+    @Column({ type: 'float'})
     preco: string
 
-    @Column()
+    @Column({ type: 'float', nullable: true})
     troco: string
 
     @Column()
