@@ -9,19 +9,13 @@ export class Pedido {
     qtd: number
 
     @Column()
-    tipo: string
-
-    @Column()
     tamanho: string
 
-    @Column()
-    complemento: string
+    @Column({ type: 'float' })
+    preco: number
 
-    @Column({ type: 'float'})
-    preco: string
-
-    @Column({ type: 'float', nullable: true})
-    troco: string
+    @Column({ type: 'float', nullable: true })
+    troco: number
 
     @Column()
     endereco: string
@@ -35,6 +29,6 @@ export class Pedido {
     @Column()
     status: string
 
-    @Column({nullable: true})
-    img: string
+    @Column({ type: 'json', nullable: true })
+    pizzas: any
 }

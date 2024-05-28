@@ -2,35 +2,32 @@ import { Request, Response } from "express";
 import { pedidoRepositorie } from "../repositories/PedidoRepositorie"; 
 import 'dotenv/config'
 
-interface UploadedFile extends Express.Multer.File {
-    firebaseUrl?: string;
-  }
+// interface UploadedFile extends Express.Multer.File {
+//     firebaseUrl?: string;
+//   }
 
 export class PedidoController {
 
     async create(req: Request, res: Response) {
-        const { qtd ,tipo, tamanho, complemento, preco, troco, endereco, nomeCliente, contato, status } = req.body
-        const firebaseUrl = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
+        const { qtd , tamanho, preco, troco, endereco, nomeCliente, contato, status, pizzas } = req.body
+        // const firebaseUrl = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
 
-        if (!qtd || !tipo || !tamanho || !complemento || !preco || !troco || !endereco || !nomeCliente || !contato || !status ) {
+        if (!qtd || !tamanho || !preco || !troco || !endereco || !nomeCliente || !contato || !status ) {
             console.log(req.body)
             return res.status(400).json({ message: "Todos os campos são obrigatorios"})
         }
-        
 
         try {
             const novo = pedidoRepositorie.create({
                 qtd: qtd,
-                tipo: tipo,
                 tamanho: tamanho,
-                complemento: complemento,
                 preco: preco,
-                troco: troco, 
+                troco: troco,
                 endereco: endereco,
                 nomeCliente: nomeCliente,
-                contato:contato,
+                contato: contato,
                 status: status,
-                img: firebaseUrl
+                pizzas: pizzas,
             })
 
             await pedidoRepositorie.save(novo);
@@ -52,10 +49,10 @@ export class PedidoController {
         const corpo = req.body
         const { img, ...dadosParaAtualizar } = corpo;
 
-        const imgT = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
+        // const imgT = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
         
         try {
-            if (Object.keys(dadosParaAtualizar).length === 0 && !imgT) {
+            if (Object.keys(dadosParaAtualizar).length === 0) {
                 return res.status(400).json({ message: "Nenhum dado para atualizar" });
             }
     
@@ -63,9 +60,9 @@ export class PedidoController {
             if (Object.keys(dadosParaAtualizar).length > 0) {
                 Object.assign(updateValues, dadosParaAtualizar);
             }
-            if (imgT) {
-                updateValues.img = imgT;
-            }
+            // if (imgT) {
+            //     updateValues.img = imgT;
+            // }
     
             const result = await pedidoRepositorie.update(id, updateValues);
     

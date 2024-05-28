@@ -28,7 +28,7 @@ routes.post('/esqueci', new UsuarioController().enviarEmailRedefinicao)
 routes.post('/trocarSenha', new UsuarioController().resetarSenha)
 
 //Rotas de Pedido
-routes.post('/criar-pedido', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().create)
+routes.post('/criar-pedido', authMiddleware, new PedidoController().create)
 routes.get('/todos-pedidos', authMiddleware, new PedidoController().pedidos)
 routes.get('/unico-pedido/:id', authMiddleware, new PedidoController().pedidoId)
 routes.put('/alterar-pedido/:id', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().alter)
