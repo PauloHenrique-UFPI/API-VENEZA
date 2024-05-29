@@ -31,4 +31,7 @@ export class Pedido {
 
     @Column({ type: 'json', nullable: true })
     pizzas: any
+
+    @Column({ type: 'json', nullable: true })
+    bebidas: any
 }

@@ -9,10 +9,10 @@ import 'dotenv/config'
 export class PedidoController {
 
     async create(req: Request, res: Response) {
-        const { qtd , tamanho, preco, troco, endereco, nomeCliente, contato, status, pizzas } = req.body
+        const { qtd , tamanho, preco, troco, endereco, nomeCliente, contato, status, pizzas, bebidas } = req.body
         // const firebaseUrl = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
 
-        if (!qtd || !tamanho || !preco || !troco || !endereco || !nomeCliente || !contato || !status ) {
+        if (!qtd || !tamanho || !preco || !troco || !endereco || !nomeCliente || !contato || !status || !pizzas || !bebidas) {
             console.log(req.body)
             return res.status(400).json({ message: "Todos os campos são obrigatorios"})
         }
@@ -28,6 +28,7 @@ export class PedidoController {
                 contato: contato,
                 status: status,
                 pizzas: pizzas,
+                bebidas: bebidas
             })
 
             await pedidoRepositorie.save(novo);

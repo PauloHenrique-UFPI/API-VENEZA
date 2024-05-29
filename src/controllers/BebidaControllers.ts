@@ -7,16 +7,17 @@ interface UploadedFile extends Express.Multer.File {
 export class BebidaController {
     
     async create(req: Request, res: Response) {
-        const { nome, litros, preco, promocao } = req.body;
+        const { nome, qtd , litros, preco, promocao } = req.body;
         const img = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
 
-        if ( !nome || !litros || !preco || !promocao || !img ){
+        if ( !nome || !qtd || !litros || !preco || !promocao || !img ){
             return res.status(400).json({ message: "Todos os campos são obrigatorios"})
         }
 
         try {
             const novo = bebidaRepositorie.create({
                 nome: nome,
+                qtd: qtd,
                 litros: litros,
                 preco: preco,
                 promocao: promocao,

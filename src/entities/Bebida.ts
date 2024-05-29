@@ -6,6 +6,9 @@ export class Bebida {
     id: number
 
     @Column()
+    qtd: number
+
+    @Column()
     img: string
 
     @Column()
@@ -19,4 +22,5 @@ export class Bebida {
 
     @Column()
     promocao: boolean
+    
 }
