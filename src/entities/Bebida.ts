@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Promocao } from "./Promocao";
 
 @Entity('bebida')
 export class Bebida {
@@ -19,6 +20,9 @@ export class Bebida {
 
     @Column({ type: 'float' }) 
     preco: number
+
+    @OneToMany(() => Promocao, promocao => promocao.bebida)
+    promocoes: Promocao[]
 
     @Column()
     promocao: boolean
