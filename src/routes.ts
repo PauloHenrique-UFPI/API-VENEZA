@@ -37,10 +37,13 @@ routes.delete('/deletar-pedido/:id', authMiddleware, new PedidoController().dele
 //Rotas de Pizza
 routes.post('/criar-pizza', authMiddleware, Multer.single('img'), uploadImage ,new PizzaController().create)
 routes.get('/todas-pizza', new PizzaController().pizzas)
-routes.get('/pizza-promocao', new PizzaController().promocao)
+//routes.get('/pizza-promocao', new PizzaController().promocao)
 routes.get('/unica-pizza/:id', authMiddleware, new PizzaController().pizzaID)
 routes.put('/alterar-pizza/:id', authMiddleware,  Multer.single('img'), uploadImage, new PizzaController().alter)
 routes.delete('/deletar-pizza/:id', authMiddleware, new PizzaController().delete)
+
+//Rotas de promoção
+routes.post('/cria-promocao/', authMiddleware, new PizzaController().addPromocao)
 
 //Rotas de bebidas
 routes.post('/criar-bebida', authMiddleware, Multer.single('img'), uploadImage ,new BebidaController().create)
