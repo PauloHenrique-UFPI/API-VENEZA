@@ -19,6 +19,10 @@ export class PizzaController {
             return res.status(400).json({ message: "Todos os campos são obrigatórios" });
         }
 
+        if (!Object.values(Categoria).includes(categoria)) {
+            return res.status(400).json({ message: 'Categoria inválida' });
+        }
+
         let precosJson
         if (typeof precos === 'string') {
             precosJson = JSON.parse(precos);

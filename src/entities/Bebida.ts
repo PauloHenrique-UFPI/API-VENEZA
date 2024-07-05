@@ -1,5 +1,6 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Promocao } from "./Promocao";
+import { Pedido } from "./Pedido";
 
 @Entity('bebida')
 export class Bebida {
@@ -26,5 +27,8 @@ export class Bebida {
 
     @Column()
     promocao: boolean
+
+    @ManyToMany(() => Pedido, pedido => pedido.bebidas)
+    pedidos: Pedido[]
     
 }

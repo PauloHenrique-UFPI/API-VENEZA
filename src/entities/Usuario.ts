@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Pedido } from "./Pedido";
 
 @Entity('usuarios')
 export class Usuario {
@@ -25,4 +26,7 @@ export class Usuario {
 
     @Column({nullable: true})
     tipo: string
+
+    @OneToMany(() => Pedido, pedido => pedido.usuario)
+    pedidos: Pedido[]
 }
