@@ -20,6 +20,6 @@ export class Promocao {
     @Column('decimal')
     precoPromocional: number
 
-    @Column()
+    @Column({ nullable: true})
     descricao: string
 }

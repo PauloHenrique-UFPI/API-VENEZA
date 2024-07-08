@@ -8,6 +8,7 @@ import { PizzaController } from "./controllers/PizzaControllers";
 import multer from 'multer';
 import { BebidaController } from "./controllers/BebidaControllers";
 import { BordaController, IngredienteAdicionalController } from "./controllers/BordaIngredienteControllers";
+import { PromocaoController } from "./controllers/PromocaoControllers";
 const uploadImage = require("./services/firebase");
 
 const Multer = multer({
@@ -56,7 +57,11 @@ routes.put('/alterar-ingrediente/:id', authMiddleware, new IngredienteAdicionalC
 routes.delete('/deletar-ingrediente/:id', authMiddleware, new IngredienteAdicionalController().deleteIngrediente)
 
 //Rotas de promoção
-routes.post('/cria-promocao/', authMiddleware, new PizzaController().addPromocao)
+routes.post('/cria-promocao', authMiddleware, new PromocaoController().createPromocao)
+routes.get('/todas-promocao', authMiddleware, new PromocaoController().todasPromocao)
+routes.get('/unica-promocao/:id', authMiddleware, new PromocaoController().unicaPromocao)
+routes.put('/alterar-promocao/:id', authMiddleware, new PromocaoController().alterPromocao)
+routes.delete('/delete-promocao/:id', authMiddleware, new PromocaoController().deletePromocao)
 
 //Rotas de bebidas
 routes.post('/criar-bebida', authMiddleware, Multer.single('img'), uploadImage ,new BebidaController().create)
@@ -67,4 +72,3 @@ routes.delete('/deletar-bebida/:id', authMiddleware, new BebidaController().dele
 
 
 export default routes
-
