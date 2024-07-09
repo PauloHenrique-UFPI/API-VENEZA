@@ -35,6 +35,7 @@ routes.get('/todos-pedidos', authMiddleware, new PedidoController().pedidos)
 routes.get('/unico-pedido/:id', authMiddleware, new PedidoController().pedidoId)
 routes.put('/alterar-pedido/:id', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().alter)
 routes.delete('/deletar-pedido/:id', authMiddleware, new PedidoController().delete)
+routes.put('/cancelar-pedido/:id', authMiddleware, new PedidoController().cancelarPedido)
 
 //Rotas de Pizza
 routes.post('/criar-pizza', authMiddleware, Multer.single('img'), uploadImage ,new PizzaController().create)

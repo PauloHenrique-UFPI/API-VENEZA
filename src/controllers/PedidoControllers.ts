@@ -125,6 +125,45 @@ export class PedidoController {
         }
 
     }
+    // Rota de cancelar pedido
+    async cancelarPedido(req: Request, res: Response){
+        const id  = parseInt(req.params.id, 10);
+        const pedido = await pedidoRepositorie.findOne({where: {id:id}});
+        try {
+            if (!pedido){
+                return res.status(400).json({ message: `Pedido com ID ${id} não encontrado`});
+            }
+            pedido.status = "aceito";
+            await pedidoRepositorie.save(pedido);
+            return res.status(200).json({ message: `Pedido com ID ${id} aceito`});
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+                message: "Erro interno",
+            });
+        }
+    }
+
+    async aceitarPedido(req: Request, res: Response){
+        const id  = parseInt(req.params.id, 10);
+        const pedido = await pedidoRepositorie.findOne({where: {id:id}});
+        try {
+            if (!pedido){
+                return res.status(404).json({ message: `Pedido com ID ${id} não encontrado`});
+            }
+            if (pedido.status != "pendente"){
+                return res.status(404).json({ message: `Pedido com ID ${id} não está pendente`});
+            }
+            pedido.status = "cancelado";
+            await pedidoRepositorie.save(pedido);
+            return res.status(404).json({ message: `Pedido com ID ${id} cancelado`});
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+                message: "Erro interno",
+            });
+        }
+    }
 
     async alter(req: Request, res: Response){
         const id  = parseInt(req.params.id, 10);
