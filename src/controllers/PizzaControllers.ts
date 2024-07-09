@@ -12,63 +12,63 @@ export class PizzaController {
 
     async create(req: Request, res: Response) {
         console.log(req.body)
-        // const { sabor, ingredientes, precos, categoria, promocoes } = req.body;
-        // const firebaseUrl = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
+        const { sabor, ingredientes, precos, categoria, promocoes } = req.body;
+        const firebaseUrl = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
 
-        // if (!sabor || !ingredientes || !precos || !categoria || !firebaseUrl) {
-        //     return res.status(400).json({ message: "Todos os campos são obrigatórios" });
-        // }
+        if (!sabor || !ingredientes || !precos || !categoria || !firebaseUrl) {
+            return res.status(400).json({ message: "Todos os campos são obrigatórios" });
+        }
 
-        // if (!Object.values(Categoria).includes(categoria)) {
-        //     return res.status(400).json({ message: 'Categoria inválida' });
-        // }
+        if (!Object.values(Categoria).includes(categoria)) {
+            return res.status(400).json({ message: 'Categoria inválida' });
+        }
 
-        // let precosJson
-        // if (typeof precos === 'string') {
-        //     precosJson = JSON.parse(precos);
-        // }else{
-        //     precosJson = precos
-        // }
-        // for (const size of Object.values(Tamanho)) {
-        //     if (!precosJson.hasOwnProperty(size)) {
-        //         return res.status(400).json({ message: `Preço para o tamanho ${size} é obrigatório`, precosJson });
-        //     }
-        // }
-        // try {
-        //     const novaPizza = pizzaRepositorie.create({
-        //         img: firebaseUrl,
-        //         sabor: sabor,
-        //         ingredientes: ingredientes,
-        //         precos: precosJson,
-        //         categoria: categoria
-        //     });
+        let precosJson
+        if (typeof precos === 'string') {
+            precosJson = JSON.parse(precos);
+        }else{
+            precosJson = precos
+        }
+        for (const size of Object.values(Tamanho)) {
+            if (!precosJson.hasOwnProperty(size)) {
+                return res.status(400).json({ message: `Preço para o tamanho ${size} é obrigatório`, precosJson });
+            }
+        }
+        try {
+            const novaPizza = pizzaRepositorie.create({
+                img: firebaseUrl,
+                sabor: sabor,
+                ingredientes: ingredientes,
+                precos: precosJson,
+                categoria: categoria
+            });
 
-        //     await pizzaRepositorie.save(novaPizza);
+            await pizzaRepositorie.save(novaPizza);
 
-        //     if (promocoes && Array.isArray(promocoes)) {
-        //         for (const promo of promocoes) {
-        //             const { tamanho, precoPromocional, descricao } = promo;
-        //             if (Object.values(Tamanho).includes(tamanho) && precoPromocional) {
-        //                 const novaPromocao = promocaoRepositorie.create({
-        //                     pizza: novaPizza,
-        //                     tamanho,
-        //                     precoPromocional,
-        //                     descricao
-        //                 });
-        //                 await promocaoRepositorie.save(novaPromocao);
-        //             }
-        //         }
-        //     }
-        //     return res.status(201).json({
-        //         message: "Pizza cadastrada com sucesso !"
-        //     });
+            if (promocoes && Array.isArray(promocoes)) {
+                for (const promo of promocoes) {
+                    const { tamanho, precoPromocional, descricao } = promo;
+                    if (Object.values(Tamanho).includes(tamanho) && precoPromocional) {
+                        const novaPromocao = promocaoRepositorie.create({
+                            pizza: novaPizza,
+                            tamanho,
+                            precoPromocional,
+                            descricao
+                        });
+                        await promocaoRepositorie.save(novaPromocao);
+                    }
+                }
+            }
+            return res.status(201).json({
+                message: "Pizza cadastrada com sucesso !"
+            });
 
-        // } catch (error) {
-        //     console.log(error);
-        //     return res.status(500).json({
-        //       message: "erro interno",
-        //     }); 
-        // }
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+              message: "erro interno",
+            }); 
+        }
     }
 
     async alter(req: Request, res: Response) {
