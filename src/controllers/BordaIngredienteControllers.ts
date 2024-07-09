@@ -127,7 +127,7 @@ export class IngredienteAdicionalController{
     }
     async getAllIngredientes(req: Request, res: Response) {
         try {
-            const ingrediente = await bordaRepositorie.find();
+            const ingrediente = await ingredienteAdicionalRepositorie.find();
             res.json({
                 groups: ingrediente.map((ingrediente) => {
                     return {
