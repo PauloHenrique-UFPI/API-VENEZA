@@ -11,6 +11,7 @@ import { Usuario } from "../entities/Usuario";
 import { Local } from "../enums/localPedido";
 import { Tamanho } from "../enums/tamanhosPizza";
 import { bebidaRepositorie } from "../repositories/BebidaRepositorie";
+import { promocaoRepositorie } from "../repositories/PromocaoRepositorie";
 
 // interface UploadedFile extends Express.Multer.File {
 //     firebaseUrl?: string;
@@ -55,6 +56,10 @@ export class PedidoController {
                 if (!pizzaAtual) {
                     return res.status(404).json({ message: `Pizza com ID ${pizzaId} não encontrada` });
                 }
+                // const promo = await promocaoRepositorie.findOne({where: {pizza: {id: idUsuario}}})
+                // if ( promo){
+                //     console.log("Pizza na promoção")
+                // }
                 if (pizzaAtual.precos[tamanho as TamanhoPizza] !== undefined) {
                     precoTotalPizza += (pizzaAtual.precos[tamanho as TamanhoPizza])/ pizzaIds.length;
                 } else {
@@ -105,7 +110,7 @@ export class PedidoController {
                 descricao: descricao
             })
 
-            console.log(novoPedido)
+            // console.log(novoPedido)
             await pedidoRepositorie.save(novoPedido);
             return res.json({
                 message: "Pedido cadastrado com sucesso !",
@@ -231,7 +236,7 @@ export class PedidoController {
             console.log(error);
             return res.status(500).json({
                 message: "Erro interno",
-            });
+            }); 
         }
     }
     
