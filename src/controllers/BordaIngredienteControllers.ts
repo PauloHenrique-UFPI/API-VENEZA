@@ -31,7 +31,14 @@ export class BordaController{
     async getAllBordas(req: Request, res: Response) {
         try {
             const bordas = await bordaRepositorie.find();
-            return res.status(200).json(bordas);
+            res.json({
+                groups: bordas.map((bordas) => {
+                    return {
+                    ...bordas,
+                    }
+                }),
+            })
+            // return res.status(200).json(bordas);
         } catch (error) {
             console.log(error);
             return res.status(500).json({ message: "Erro interno" });
@@ -121,7 +128,14 @@ export class IngredienteAdicionalController{
     async getAllIngredientes(req: Request, res: Response) {
         try {
             const ingrediente = await bordaRepositorie.find();
-            return res.status(200).json(ingrediente);
+            res.json({
+                groups: ingrediente.map((ingrediente) => {
+                    return {
+                    ...ingrediente,
+                    }
+                }),
+            })
+            // return res.status(200).json(ingrediente);
         } catch (error) {
             console.log(error);
             return res.status(500).json({ message: "Erro interno" });
