@@ -121,7 +121,7 @@ export class UsuarioController {
                 return res.json({
                     message: "login efetuado",
                     ...userExist,
-                    password: undefined,
+                    senha: undefined,
                     token,
                 });
                 } else {
