@@ -408,7 +408,73 @@ export class PedidoController {
         } 
     }
 
-
+    async pedidosUsuarioId(req: Request, res: Response){
+        const id = parseInt(req.params.id, 10);
+        const pedidos = await pedidoRepositorie.find(
+            {where: {usuario: {id:id}},
+            relations: [
+                "pizzas",
+                "pizzas.sabores",
+                "pizzas.borda",
+                "pizzas.ingredientesAdicionais",
+                "bebidas",
+                "usuario"
+            ]
+        });
+        try {
+            if (!pedidos){
+                return res.status(404).json({ message: `Não existem pedidos para o usuário de id ${id}` });
+            }
+            const response = pedidos.map(pedido => ({
+                id: pedido.id, // Retorna o id do pedido
+                status: pedido.status, // Retorna o status do pedido
+                precoTotal: pedido.precoTotal, // Retorna o preco total de todas as pizzas e bebidas do pedido
+                local: pedido.local,
+                descricao: pedido.descricao,
+                usuario: pedido.usuario ? {
+                    id: pedido.usuario.id,
+                    email: pedido.usuario.email,
+                    endereco: pedido.usuario.endereco,
+                    cep: pedido.usuario.cep
+                } : null,
+                //usuario: pedido.usuario ? { id: pedido.usuario.id, nome: pedido.usuario.nome } : null,
+                pizzas: pedido.pizzas.map(pedidoPizza => ({ // Retorna as pizzas do pedido
+                    id: pedidoPizza.id, // Retorna o id da pizza
+                    precoTotal: pedidoPizza.precoTotal,
+                    tamanho: pedidoPizza.tamanho,
+                    sabores: pedidoPizza.sabores.map(sabor => ({ // Retorna os sabores dessa pizza
+                        id: sabor.id, // Retorna o id do sabor
+                        //img: sabor.img,
+                        sabor: sabor.sabor,
+                        //ingredientes: sabor.ingredientes,
+                        //precos: sabor.precos,
+                        categoria: sabor.categoria
+                    })),
+                    borda: pedidoPizza.borda ? {
+                        id: pedidoPizza.borda.id,
+                        nome: pedidoPizza.borda.nome,
+                        preco: pedidoPizza.borda.preco
+                    } : null,
+                    ingredientesAdicionais: pedidoPizza.ingredientesAdicionais.map(ingrediente => ({
+                        id: ingrediente.id,
+                        nome: ingrediente.nome,
+                        preco: ingrediente.preco
+                    }))
+                })),
+                bebidas: pedido.bebidas.map(bebida => ({
+                    id: bebida.id,
+                    nome: bebida.nome,
+                    preco: bebida.preco
+                }))
+            }));
+            res.json({ groups: response });
+        } catch (error) {
+            console.log(error);
+          return res.status(500).json({
+            message: "erro interno",
+          });
+        }
+    }
     async delete(req: Request, res: Response) {
         try {
             const id = parseInt(req.params.id, 10);
