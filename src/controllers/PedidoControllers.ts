@@ -12,6 +12,8 @@ import { Local } from "../enums/localPedido";
 import { Tamanho } from "../enums/tamanhosPizza";
 import { bebidaRepositorie } from "../repositories/BebidaRepositorie";
 import { promocaoRepositorie } from "../repositories/PromocaoRepositorie";
+import { StatusPedido } from "../enums/statusPedido";
+import { FormaPagamento } from "../enums/formaPagamento";
 
 // interface UploadedFile extends Express.Multer.File {
 //     firebaseUrl?: string;
@@ -20,10 +22,10 @@ import { promocaoRepositorie } from "../repositories/PromocaoRepositorie";
 export class PedidoController {
 
     async create(req: Request, res: Response) {
-        const { status, pizzas, bebidas, idUsuario, local, descricao } = req.body
+        const { pizzas, bebidas, idUsuario, local, descricao, formaPagamento, valor } = req.body
         // const firebaseUrl = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
 
-        if (!status || !pizzas || !bebidas || !idUsuario || !local) {
+        if (!pizzas || !bebidas || !idUsuario || !local || !formaPagamento) {
             console.log(req.body)
             return res.status(400).json({ message: "Todos os campos são obrigatorios"})
         }
@@ -35,6 +37,9 @@ export class PedidoController {
 
         if (!Object.values(Local).includes(local)){
             return res.status(400).json({ message: 'Local inválido' });
+        }
+        if (!Object.values(FormaPagamento).includes(formaPagamento)){
+            return res.status(400).json({ message: 'Forma de pagamento inválida' });
         }
         // if (!Object.values(Categoria).includes(categoria)) {
         //     return res.status(400).json({ message: 'Categoria inválida' });
@@ -56,12 +61,14 @@ export class PedidoController {
                 if (!pizzaAtual) {
                     return res.status(404).json({ message: `Pizza com ID ${pizzaId} não encontrada` });
                 }
-                // const promo = await promocaoRepositorie.findOne({where: {pizza: {id: idUsuario}}})
-                // if ( promo){
-                //     console.log("Pizza na promoção")
-                // }
+                const promo = await promocaoRepositorie.findOne({where: { pizza: { id: pizzaId } }})
                 if (pizzaAtual.precos[tamanho as TamanhoPizza] !== undefined) {
-                    precoTotalPizza += (pizzaAtual.precos[tamanho as TamanhoPizza])/ pizzaIds.length;
+                    if ( promo && promo.tamanho == tamanho){
+                        console.log("Pizza na promoção")
+                        precoTotalPizza += (promo.precoPromocional)/ pizzaIds.length;
+                    }else{
+                        precoTotalPizza += (pizzaAtual.precos[tamanho as TamanhoPizza])/ pizzaIds.length;
+                    }
                 } else {
                     return res.status(400).json({ message: `Tamanho '${tamanho}' não é válido para esta pizza` });
                 }
@@ -97,19 +104,49 @@ export class PedidoController {
 
             pedidoPizzas.push(pedidoPizza);
         }
-
+        if (bebidas.length > 0 ){
+            for (const bebida of bebidas){
+                const bebidaAtual = await bebidaRepositorie.findOne({where: {id:bebida}})
+                if (!bebidaAtual){
+                    return res.status(404).json({ message: `Bebida com ID ${bebida} não encontrada` });
+                }
+                const promoBebida = await promocaoRepositorie.findOne({where: { pizza: { id: bebida } }})
+                if (!promoBebida){
+                    precoTotalPedido += bebidaAtual.preco;
+                }else{
+                    console.log("Bebida na promoção");
+                    if (promoBebida.pizza && pedidoPizzas[promoBebida.pizza.id]){
+                        console.log('Bedida ja adicionada pois esta em combo')
+                    }else{
+                        precoTotalPedido += promoBebida.precoPromocional;
+                    }
+                }
+            }
+        }
+        
         try {
             const bebidas2 = bebidas.map((id: number) => ({ id }))
             const novoPedido = pedidoRepositorie.create({
-                status: 'Pendente',
+                status: StatusPedido.PENDENTE,
                 precoTotal: precoTotalPedido,
                 pizzas: pedidoPizzas,
                 bebidas: bebidas2,
                 usuario: usuario,
                 local: local,
-                descricao: descricao
+                descricao: descricao,
+                FormaPagamento: formaPagamento
             })
-
+            if (FormaPagamento.DINHEIRO == formaPagamento){
+                if (valor){
+                    novoPedido.troco = valor - precoTotalPedido;
+                    if (novoPedido.troco < 0 ){
+                        return res.status(400).json({ message: `Valor pago é insuficinente; valor a pagar: ${valor}; preço total: ${precoTotalPedido}` });    
+                    }
+                }else{
+                    return res.status(400).json({ message: `Pedido pago em dinheiro deve possuir o valor a pagar` });
+                }
+            }
+            
             // console.log(novoPedido)
             await pedidoRepositorie.save(novoPedido);
             return res.json({
@@ -124,45 +161,6 @@ export class PedidoController {
             });   
         }
 
-    }
-    // Rota de cancelar pedido
-    async cancelarPedido(req: Request, res: Response){
-        const id  = parseInt(req.params.id, 10);
-        const pedido = await pedidoRepositorie.findOne({where: {id:id}});
-        try {
-            if (!pedido){
-                return res.status(400).json({ message: `Pedido com ID ${id} não encontrado`});
-            }
-            pedido.status = "aceito";
-            await pedidoRepositorie.save(pedido);
-            return res.status(200).json({ message: `Pedido com ID ${id} aceito`});
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({
-                message: "Erro interno",
-            });
-        }
-    }
-
-    async aceitarPedido(req: Request, res: Response){
-        const id  = parseInt(req.params.id, 10);
-        const pedido = await pedidoRepositorie.findOne({where: {id:id}});
-        try {
-            if (!pedido){
-                return res.status(404).json({ message: `Pedido com ID ${id} não encontrado`});
-            }
-            if (pedido.status != "pendente"){
-                return res.status(404).json({ message: `Pedido com ID ${id} não está pendente`});
-            }
-            pedido.status = "cancelado";
-            await pedidoRepositorie.save(pedido);
-            return res.status(404).json({ message: `Pedido com ID ${id} cancelado`});
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({
-                message: "Erro interno",
-            });
-        }
     }
 
     async alter(req: Request, res: Response){
