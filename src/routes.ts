@@ -9,6 +9,8 @@ import multer from 'multer';
 import { BebidaController } from "./controllers/BebidaControllers";
 import { BordaController, IngredienteAdicionalController } from "./controllers/BordaIngredienteControllers";
 import { PromocaoController } from "./controllers/PromocaoControllers";
+import { ImprimirControllers } from "./controllers/ImprimirController";
+import { StatusPedidoController } from "./controllers/StatusPedidoController";
 const uploadImage = require("./services/firebase");
 
 const Multer = multer({
@@ -36,7 +38,14 @@ routes.get('/unico-pedido/:id', authMiddleware, new PedidoController().pedidoId)
 routes.get('/usuario-pedido/:id', authMiddleware, new PedidoController().pedidosUsuarioId)
 routes.put('/alterar-pedido/:id', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().alter)
 routes.delete('/deletar-pedido/:id', authMiddleware, new PedidoController().delete)
-routes.put('/cancelar-pedido/:id', authMiddleware, new PedidoController().cancelarPedido)
+routes.get('/imprimir-pedido/:id', authMiddleware, new ImprimirControllers().imprimirPedido)
+
+//Status do pedido
+routes.put('/aceitar-pedido/:id', authMiddleware, new StatusPedidoController().aceitaPedido) // pedido aceito
+routes.put('/entregar-pedido/:id', authMiddleware, new StatusPedidoController().entregaPedido) // pedido saiu para entrega
+routes.put('/entregou-pedido/:id', authMiddleware, new StatusPedidoController().entregouPedido) // pedido entregue
+routes.put('/finalizar-pedido/:id', authMiddleware, new StatusPedidoController().finalizaPedido) // pedido entregue e pago
+routes.put('/cancelar-pedido/:id', authMiddleware, new StatusPedidoController().cancelaPedido) // pedido cancelado
 
 //Rotas de Pizza
 routes.post('/criar-pizza', authMiddleware, Multer.single('img'), uploadImage ,new PizzaController().create)

@@ -3,20 +3,31 @@ import { Usuario } from "./Usuario";
 import { Bebida } from "./Bebida";
 import { PedidoPizza } from "./PedidoPizza";
 import { Local } from "../enums/localPedido";
+import { StatusPedido } from "../enums/statusPedido";
+import { FormaPagamento } from "../enums/formaPagamento";
 
 @Entity('pedidos')
 export class Pedido {
     @PrimaryGeneratedColumn()
-    id: number
+    id: number;
 
-    @Column()
-    status: string
+    // @Column()
+    // status: string
+
+    @Column({ type: 'enum', enum: StatusPedido})
+    status: StatusPedido;
+
+    @Column({ type: 'enum', enum: FormaPagamento})
+    FormaPagamento: FormaPagamento;
+
+    @Column({ type: 'float', nullable: true})
+    troco: number;
 
     @Column({ type: 'float' })
     precoTotal: number;
 
     @Column({ type: 'enum', enum: Local})
-    local: Local
+    local: Local;
 
     @Column({ nullable: true })
     descricao: string;
@@ -29,5 +40,5 @@ export class Pedido {
     bebidas: Bebida[];
 
     @ManyToOne(() => Usuario, usuario => usuario.pedidos)
-    usuario: Usuario
+    usuario: Usuario;
 }
