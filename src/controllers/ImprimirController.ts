@@ -45,8 +45,8 @@ export class ImprimirControllers {
                 content: [
                     { text: 'Veneza Pizza Express', style: 'hyper' },
                     { text: ` ${pedido.local.toUpperCase()}`, style: 'subheader' },
-                    { text: `- Data: ${formattedDate}`, style: 'subheader' },
-                    { text: `- Hora: ${formattedTime}`, style: 'subheader' },
+                    { text: `- Data: ${pedido.dataHora.toLocaleDateString()}`, style: 'subheader' },
+                    { text: `- Hora: ${pedido.dataHora.toLocaleTimeString()}`, style: 'subheader' },
                     { text: `Pedido ID: ${pedido.id}`, style: 'subheader' },
                     { text: 'Itens:', style: 'header' },
                     { text: 'Pizzas:', style: 'subheader' },
@@ -69,6 +69,9 @@ export class ImprimirControllers {
                     { text: `-  Cliente: ${pedido.usuario.endereco}`, style: 'subheader' },
                     { text: `Observação: ${pedido.descricao}`, style: 'subheader' },
                     { text: `Pagamento`, style: 'header' },
+                    { text: `Forma de pagamento:`},
+                    { text: `- ${pedido.FormaPagamento}`},
+                    { text: `- Troco: R$${pedido.troco.toFixed(2)}`},
                     // { text: `Subtotal de pizza (as): R$${pedido.pizzas.  toFixed(2)}`, style: 'subheader' },
                     // { text: `Subtotal de bebida (as): R$${pedido.precoTotal.toFixed(2)}`, style: 'subheader' },
                     { text: `- Preço total: R$${pedido.precoTotal.toFixed(2)}`, style: 'subheader' }

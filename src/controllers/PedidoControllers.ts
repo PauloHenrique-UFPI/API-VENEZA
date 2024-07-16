@@ -64,7 +64,7 @@ export class PedidoController {
                 const promo = await promocaoRepositorie.findOne({where: { pizza: { id: pizzaId } }})
                 if (pizzaAtual.precos[tamanho as TamanhoPizza] !== undefined) {
                     if ( promo && promo.tamanho == tamanho){
-                        console.log("Pizza na promoção")
+                        // console.log("Pizza na promoção")
                         precoTotalPizza += (promo.precoPromocional)/ pizzaIds.length;
                     }else{
                         precoTotalPizza += (pizzaAtual.precos[tamanho as TamanhoPizza])/ pizzaIds.length;
@@ -114,9 +114,9 @@ export class PedidoController {
                 if (!promoBebida){
                     precoTotalPedido += bebidaAtual.preco;
                 }else{
-                    console.log("Bebida na promoção");
+                    // console.log("Bebida na promoção");
                     if (promoBebida.pizza && pedidoPizzas[promoBebida.pizza.id]){
-                        console.log('Bedida ja adicionada pois esta em combo')
+                        // console.log('Bedida ja adicionada pois esta em combo')
                     }else{
                         precoTotalPedido += promoBebida.precoPromocional;
                     }
@@ -163,65 +163,51 @@ export class PedidoController {
 
     }
 
-    async alter(req: Request, res: Response){
-        const id  = parseInt(req.params.id, 10);
-        const corpo = req.body
-        const { img, pizzas, bebidas, ...dadosParaAtualizar } = corpo;
-
-        // const imgT = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
-        
+    async alter(req: Request, res: Response) {
+        const id = parseInt(req.params.id, 10);
+        const corpo = req.body;
+        const { pizzas, bebidas, ...dadosParaAtualizar } = corpo;
+    
         try {
             if (Object.keys(dadosParaAtualizar).length === 0 && !bebidas && !pizzas) {
                 return res.status(400).json({ message: "Nenhum dado para atualizar" });
             }
     
-            const updateValues: { [key: string]: any } = {};
-            if (Object.keys(dadosParaAtualizar).length > 0) {
-                Object.assign(updateValues, dadosParaAtualizar);
-            }
-            // if (imgT) {
-            //     updateValues.img = imgT;
-            // }
+            const pedido = await pedidoRepositorie.findOne({ where: { id: id }, relations: ["pizzas", "bebidas"] });
     
-            const result = await pedidoRepositorie.update(id, updateValues);
-            let pedido = await pedidoRepositorie.findOne({where: {id:id}, relations: ["pizzas", "bebidas"] });
-            
-            if(!pedido){
-                return res.status(400).json({ message: "Id não encontrado" });
-            }
             if (!pedido) {
                 return res.status(404).json({ message: `Pedido com ID ${id} não encontrado` });
             }
-            
+    
             // Atualiza os campos simples diretamente
             if (Object.keys(dadosParaAtualizar).length > 0) {
                 await pedidoRepositorie.update(id, dadosParaAtualizar);
             }
-            
+    
             // Se houver pizzas para atualizar
             if (pizzas) {
                 // Remove as pizzas existentes no pedido
                 pedido.pizzas = [];
-                
+    
                 // Adiciona as novas pizzas ao pedido
                 for (const pizzaData of pizzas) {
                     const { pizzaIds, bordaId, ingredientesAdicionaisIds, tamanho } = pizzaData;
-                    
+    
                     let precoTotalPizza = 0;
-                    
+    
                     for (const pizzaId of pizzaIds) {
-                        const pizza = await pizzaRepositorie.findOne({where: {id: pizzaId}});
+                        const pizza = await pizzaRepositorie.findOne({ where: { id: pizzaId } });
                         if (!pizza) {
                             return res.status(404).json({ message: `Pizza com ID ${pizzaId} não encontrada` });
                         }
-                        
+    
                         if (pizza.precos[tamanho as Tamanho] !== undefined) {
                             precoTotalPizza += pizza.precos[tamanho as Tamanho] / pizzaIds.length;
                         } else {
                             return res.status(400).json({ message: `Tamanho '${tamanho}' não é válido para esta pizza` });
                         }
                     }
-                    
+    
                     // Busca a borda, se houver
                     let borda = undefined;
                     if (bordaId) {
@@ -232,13 +218,13 @@ export class PedidoController {
                         // Adiciona o preço da borda ao total da pizza
                         precoTotalPizza += borda.preco;
                     }
-                    
+    
                     // Busca os ingredientes adicionais, se houver
                     let ingredientesAdicionais: IngredienteAdicional[] = [];
                     if (ingredientesAdicionaisIds && ingredientesAdicionaisIds.length > 0) {
                         ingredientesAdicionais = await ingredienteAdicionalRepositorie.findByIds(ingredientesAdicionaisIds);
                     }
-                    
+    
                     // Cria a entidade PedidoPizza e a associa ao pedido com as informações atualizadas
                     const pedidoPizza = pedidoPizzaRepositorie.create({
                         sabores: pizzaIds.map((id: number) => ({ id })),
@@ -247,25 +233,26 @@ export class PedidoController {
                         precoTotal: precoTotalPizza,
                         tamanho: tamanho // Adicione o tamanho aqui
                     });
-                    
+    
                     pedido.pizzas.push(pedidoPizza);
                 }
             }
-            
+    
             // Se houver bebidas para atualizar
             if (bebidas) {
                 // Remove as bebidas existentes no pedido
                 pedido.bebidas = [];
-                
-                // Adiciona as novas bebidas ao pedido
+    
+                // Adiciona as novas bebidas ao pedido, permitindo duplicatas
                 for (const bebidaId of bebidas) {
-                    const bebida = await bebidaRepositorie.findOne({where: {id: bebidaId}});
-                    if (!bebida) {
-                        return res.status(404).json({ message: `Bebida com ID ${bebidaId} não encontrada` });
+                    const bebida = await bebidaRepositorie.findOne({ where: { id: bebidaId } });
+                    if (bebida) {
+                        pedido.bebidas.push(bebida);
                     }
-                    pedido.bebidas.push(bebida);
                 }
             }
+    
+            // Salva o pedido com as novas bebidas e pizzas
             await pedidoRepositorie.save(pedido);
     
             return res.json({ message: "Pedido atualizado com sucesso" });
@@ -273,7 +260,7 @@ export class PedidoController {
             console.log(error);
             return res.status(500).json({
                 message: "Erro interno",
-            }); 
+            });
         }
     }
     
@@ -295,8 +282,11 @@ export class PedidoController {
             // Formata a resposta para incluir as informações necessárias
             const response = pedidos.map(pedido => ({
                 id: pedido.id, // Retorna o id do pedido
+                dataHora: pedido.dataHora,
                 status: pedido.status, // Retorna o status do pedido
                 precoTotal: pedido.precoTotal, // Retorna o preco total de todas as pizzas e bebidas do pedido
+                FormaPagamento: pedido.FormaPagamento,
+                troco: pedido.troco,
                 local: pedido.local,
                 descricao: pedido.descricao,
                 usuario: pedido.usuario ? {
@@ -361,8 +351,11 @@ export class PedidoController {
         });
         const responsse = pedido ? {
             id: pedido.id,
+            dataHora: pedido.dataHora,
             status: pedido.status,
             precoTotal: pedido.precoTotal,
+            FormaPagamento: pedido.FormaPagamento,
+            troco: pedido.troco,
             usuario: pedido.usuario ? {
                 id: pedido.usuario.id,
                 email: pedido.usuario.email,
@@ -425,8 +418,11 @@ export class PedidoController {
             }
             const response = pedidos.map(pedido => ({
                 id: pedido.id, // Retorna o id do pedido
+                dataHora: pedido.dataHora,
                 status: pedido.status, // Retorna o status do pedido
                 precoTotal: pedido.precoTotal, // Retorna o preco total de todas as pizzas e bebidas do pedido
+                FormaPagamento: pedido.FormaPagamento,
+                troco: pedido.troco,
                 local: pedido.local,
                 descricao: pedido.descricao,
                 usuario: pedido.usuario ? {
