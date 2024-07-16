@@ -32,6 +32,9 @@ export class Pedido {
     @Column({ nullable: true })
     descricao: string;
 
+    @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP" }) // Define a coluna de data e hora com valor padrão
+    dataHora: Date;
+
     @OneToMany(() => PedidoPizza, pedidoPizza => pedidoPizza.pedido, { eager: true, cascade: true })
     pizzas: PedidoPizza[];
 
