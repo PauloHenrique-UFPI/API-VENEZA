@@ -5,6 +5,7 @@ import { PedidoPizza } from "./PedidoPizza";
 import { Local } from "../enums/localPedido";
 import { StatusPedido } from "../enums/statusPedido";
 import { FormaPagamento } from "../enums/formaPagamento";
+import { Endereco } from "./Endereco";
 
 @Entity('pedidos')
 export class Pedido {
@@ -44,4 +45,7 @@ export class Pedido {
 
     @ManyToOne(() => Usuario, usuario => usuario.pedidos)
     usuario: Usuario;
+
+    @ManyToOne(() => Endereco, { eager: true, cascade: true })
+    enderecoEntrega: Endereco;
 }

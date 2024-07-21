@@ -40,6 +40,12 @@ export class ImprimirControllers {
             const now = new Date();
             const formattedDate = now.toLocaleDateString();
             const formattedTime = now.toLocaleTimeString();
+            let taxa;
+            if (pedido.enderecoEntrega.bairo != undefined){
+                taxa = pedido.enderecoEntrega.bairo.taxaEntrega;
+            }else{
+                taxa = 0;
+            }
 
             const docDefinition: TDocumentDefinitions = {
                 content: [
@@ -65,8 +71,10 @@ export class ImprimirControllers {
                     { text: `- Cliente: ${pedido.usuario.email}`, style: 'subheader' },
                     { text: `- Cliente: ${pedido.usuario.telefone}`, style: 'subheader' },
                     { text: `- Endereço:`, style: 'subheader' },
-                    { text: `-  Cliente: ${pedido.usuario.cep}`, style: 'subheader' },
-                    { text: `-  Cliente: ${pedido.usuario.endereco}`, style: 'subheader' },
+                    { text: `-  Cep: ${pedido.enderecoEntrega.cep}`, style: 'subheader' },
+                    { text: `-  Endereco: ${pedido.enderecoEntrega.endereco}`, style: 'subheader' },
+                    { text: `-  Bairro: ${pedido.enderecoEntrega.bairo}`, style: 'subheader' },
+                    { text: `-  Ponto de referência: ${pedido.enderecoEntrega.referencia}`, style: 'subheader' },
                     { text: `Observação: ${pedido.descricao}`, style: 'subheader' },
                     { text: `Pagamento`, style: 'header' },
                     { text: `Forma de pagamento:`},
@@ -74,6 +82,7 @@ export class ImprimirControllers {
                     { text: `- Troco: R$${pedido.troco.toFixed(2)}`},
                     // { text: `Subtotal de pizza (as): R$${pedido.pizzas.  toFixed(2)}`, style: 'subheader' },
                     // { text: `Subtotal de bebida (as): R$${pedido.precoTotal.toFixed(2)}`, style: 'subheader' },
+                    { text: `- Taxa de entrega: ${taxa}`, style: 'subheader' },
                     { text: `- Preço total: R$${pedido.precoTotal.toFixed(2)}`, style: 'subheader' }
                 ],
                 styles: {

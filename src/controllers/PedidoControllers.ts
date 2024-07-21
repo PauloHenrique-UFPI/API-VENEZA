@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { pedidoRepositorie } from "../repositories/PedidoRepositorie"; 
-import 'dotenv/config'
+import 'dotenv/config';
 import { userRepositorie } from "../repositories/UsuarioRepositorie";
 import { pizzaRepositorie } from "../repositories/PizzaRepositorie";
 import { bordaRepositorie } from "../repositories/BordaRepositorie";
@@ -14,6 +14,7 @@ import { bebidaRepositorie } from "../repositories/BebidaRepositorie";
 import { promocaoRepositorie } from "../repositories/PromocaoRepositorie";
 import { StatusPedido } from "../enums/statusPedido";
 import { FormaPagamento } from "../enums/formaPagamento";
+import { enderecoUsuarioRepositorie } from "../repositories/UsuarioTipoRepositorie";
 
 // interface UploadedFile extends Express.Multer.File {
 //     firebaseUrl?: string;
@@ -22,12 +23,16 @@ import { FormaPagamento } from "../enums/formaPagamento";
 export class PedidoController {
 
     async create(req: Request, res: Response) {
-        const { pizzas, bebidas, idUsuario, local, descricao, formaPagamento, valor } = req.body
+        const { pizzas, bebidas, idUsuario, local, descricao, formaPagamento, valor, idEndereco } = req.body
         // const firebaseUrl = (req.file as UploadedFile)?.firebaseUrl ?? undefined;
 
         if (!pizzas || !bebidas || !idUsuario || !local || !formaPagamento) {
             console.log(req.body)
             return res.status(400).json({ message: "Todos os campos são obrigatorios"})
+        }
+        const endereco = await enderecoUsuarioRepositorie.findOne({ where: { id: idEndereco, usuario: { id: idUsuario } } });
+        if (!endereco && local == Local.ENTREGA) {
+            return res.status(404).json({ message: "Endereço não encontrado!" });
         }
 
         const usuario = await userRepositorie.findOne({where: { id :parseInt( idUsuario, 10)}});
@@ -123,7 +128,17 @@ export class PedidoController {
                 }
             }
         }
-        
+        if (endereco){
+            const bairo = endereco.bairo;
+            if (bairo){
+                precoTotalPedido += bairo.taxaEntrega
+            }
+        }
+        // console.log("Taxa")
+        // if (Local.ENTREGA == local && endereco?.bairo.taxaEntrega != undefined){
+        //     precoTotalPedido += endereco?.bairo.taxaEntrega;
+        // }
+        // console.log("Entrega")
         try {
             const bebidas2 = bebidas.map((id: number) => ({ id }))
             const novoPedido = pedidoRepositorie.create({
@@ -134,7 +149,8 @@ export class PedidoController {
                 usuario: usuario,
                 local: local,
                 descricao: descricao,
-                FormaPagamento: formaPagamento
+                FormaPagamento: formaPagamento,
+                enderecoEntrega: idEndereco
             })
             if (FormaPagamento.DINHEIRO == formaPagamento){
                 if (valor){
@@ -288,12 +304,17 @@ export class PedidoController {
                 FormaPagamento: pedido.FormaPagamento,
                 troco: pedido.troco,
                 local: pedido.local,
+                endereco: pedido.enderecoEntrega,
+                taxaEntrega: pedido.enderecoEntrega.bairo ? {
+                    bairro: pedido.enderecoEntrega.bairo.nome,
+                    taxaEntrega: pedido.enderecoEntrega.bairo.taxaEntrega
+                }: null,
                 descricao: pedido.descricao,
                 usuario: pedido.usuario ? {
-                    id: pedido.usuario.id,
-                    email: pedido.usuario.email,
-                    endereco: pedido.usuario.endereco,
-                    cep: pedido.usuario.cep
+                    id: pedido.usuario.id
+                    // email: pedido.usuario.email,
+                    // endereco: pedido.usuario.endereco,
+                    // cep: pedido.usuario.cep
                 } : null,
                 //usuario: pedido.usuario ? { id: pedido.usuario.id, nome: pedido.usuario.nome } : null,
                 pizzas: pedido.pizzas.map(pedidoPizza => ({ // Retorna as pizzas do pedido
@@ -356,11 +377,16 @@ export class PedidoController {
             precoTotal: pedido.precoTotal,
             FormaPagamento: pedido.FormaPagamento,
             troco: pedido.troco,
+            endereco: pedido.enderecoEntrega,
+            taxaEntrega: pedido.enderecoEntrega.bairo ? {
+                bairro: pedido.enderecoEntrega.bairo.nome,
+                taxaEntrega: pedido.enderecoEntrega.bairo.taxaEntrega
+            }: null,
             usuario: pedido.usuario ? {
-                id: pedido.usuario.id,
-                email: pedido.usuario.email,
-                endereco: pedido.usuario.endereco,
-                cep: pedido.usuario.cep,
+                id: pedido.usuario.id
+                // email: pedido.usuario.email,
+                // endereco: pedido.usuario.endereco,
+                // cep: pedido.usuario.cep,
             }: null,
             pizzas: pedido.pizzas.map(pedidoPizza => ({ // Retorna as pizzas do pedido
                 id: pedidoPizza.id, // Retorna o id da pizza
@@ -425,11 +451,16 @@ export class PedidoController {
                 troco: pedido.troco,
                 local: pedido.local,
                 descricao: pedido.descricao,
+                endereco: pedido.enderecoEntrega,
+                taxaEntrega: pedido.enderecoEntrega.bairo ? {
+                    bairro: pedido.enderecoEntrega.bairo.nome,
+                    taxaEntrega: pedido.enderecoEntrega.bairo.taxaEntrega
+                }: null,
                 usuario: pedido.usuario ? {
-                    id: pedido.usuario.id,
-                    email: pedido.usuario.email,
-                    endereco: pedido.usuario.endereco,
-                    cep: pedido.usuario.cep
+                    id: pedido.usuario.id
+                    // email: pedido.usuario.email,
+                    // endereco: pedido.usuario.endereco,
+                    // cep: pedido.usuario.cep
                 } : null,
                 //usuario: pedido.usuario ? { id: pedido.usuario.id, nome: pedido.usuario.nome } : null,
                 pizzas: pedido.pizzas.map(pedidoPizza => ({ // Retorna as pizzas do pedido

@@ -4,6 +4,8 @@ import * as bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer';
 import 'dotenv/config'
+import { UsuariosTipo } from "../enums/usuariosTipo";
+import { enderecoUsuarioRepositorie } from "../repositories/UsuarioTipoRepositorie";
 
 
 const secret = process.env.SECRET as string 
@@ -13,56 +15,186 @@ const EMAIL_PASS = process.env.EMAIL_PASS as string;
 
 export class UsuarioController {
 
-    async create(req: Request, res: Response){
-        //cria usuario
+  async create(req: Request, res: Response){
+    //cria usuario
 
-        const { email, telefone, dataNascimento, senha, cep, endereco, tipo } = req.body;
+    const { nome, email, telefone, dataNascimento, senha, tipo, cep, endereco, referencia } = req.body;
+    // const { email, telefone, dataNascimento, senha, cep, endereco, tipo } = req.body;
 
-        if (!email || !telefone || !dataNascimento || !senha || !cep || !endereco || !tipo ){
-            return res.status(400).json({ message: "Todos os campos são Obrigatorios !"})
-        }
-
-        const userFind = await userRepositorie.findOne( { where: {
-            email: email,
-        } } ); 
-
-        if (userFind) {
-            return res.status(403).json({
-            message: "Email já cadastrado",
-            });
-        }
-
-        try {
-            
-            const hashP = await bcrypt.hash(senha, 10);
-            const newUser = userRepositorie.create({
-                email: email, 
-                telefone: telefone, 
-                dataNascimento: dataNascimento, 
-                senha: hashP, 
-                cep: cep, 
-                endereco: endereco,
-                tipo: tipo
-            })
-
-            await userRepositorie.save(newUser);
-            return res.status(201).json({
-                message: "Usuário criado !",
-              });
-            
-
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({
-              message: "erro interno",
-            });
-          }
-      
+    if (!nome || !email || !telefone || !dataNascimento || !senha || !cep || !endereco || !tipo ){
+      return res.status(400).json({ message: "Todos os campos são Obrigatorios !"})
     }
+
+    const userFind = await userRepositorie.findOne( { where: {email: email} } ); 
+
+    if (!Object.values(UsuariosTipo).includes(tipo)){
+      return res.status(400).json({ message: "Tipo de usuário inválido"})
+    }
+
+    if (userFind) {
+        return res.status(403).json({
+        message: "Email já cadastrado",
+        });
+    }
+    
+
+    try {
+      
+      const hashP = await bcrypt.hash(senha, 10);
+      const newUser = userRepositorie.create({
+        nome: nome,
+        email: email, 
+        telefone: telefone, 
+        dataNascimento: dataNascimento, 
+        senha: hashP,
+        usuarioTipo: tipo
+      })
+      const usuarioAtual = await userRepositorie.save(newUser);
+      
+      const endereAtual = await enderecoUsuarioRepositorie.create({
+        cep: cep,
+        endereco: endereco,
+        referencia: referencia,
+        usuario: usuarioAtual
+      })
+      await enderecoUsuarioRepositorie.save(endereAtual)
+      // await userRepositorie.save(newUser);
+      return res.status(201).json({ message: "Usuário criado !"});
+      
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "erro interno",
+      });
+    }
+    
+  }
+
+  async alterarUsuario(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    const { nome, email, telefone, dataNascimento, tipo } = req.body;
+
+    const userFind = await userRepositorie.findOne( { where: {email: email} } ); 
+    if (userFind) {
+      return res.status(403).json({ message: "Email já cadastrado"});
+    }
+    if (!Object.values(UsuariosTipo).includes(tipo)){
+      return res.status(400).json({ message: "Tipo de usuário inválido"})
+    }
+    try {
+        const usuario = await userRepositorie.findOne({ where: { id } });
+        if (!usuario) {
+            return res.status(404).json({ message: "Usuário não encontrado!" });
+        }
+
+        // Atualiza os campos do usuário, exceto a senha
+        if (nome) usuario.nome = nome;
+        if (email) usuario.email = email;
+        if (telefone) usuario.telefone = telefone;
+        if (dataNascimento) usuario.dataNascimento = new Date(dataNascimento);
+        if (tipo) usuario.usuarioTipo = tipo;
+
+        await userRepositorie.save(usuario);
+
+        return res.status(200).json({ message: "Usuário atualizado com sucesso!", usuario });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Erro interno" });
+    }
+}
+
+  async createEndereco(req: Request, res: Response) {
+    const { cep, endereco, referencia } = req.body;
+    const id = parseInt(req.params.id, 10);
+
+    try {
+      const usuarioAtual = await userRepositorie.findOne({ where: { id: id }, relations: ["enderecos"] });
+
+      if (!usuarioAtual) {
+          return res.status(400).json({ message: "Usuário não encontrado!" });
+      }
+
+      if (!cep || !endereco || !referencia) {
+          return res.status(400).json({ message: "Todos os campos são obrigatórios!" });
+      }
+
+      const novoEndereco = enderecoUsuarioRepositorie.create({
+          cep: cep,
+          endereco: endereco,
+          referencia: referencia,
+          usuario: usuarioAtual
+      });
+
+      await enderecoUsuarioRepositorie.save(novoEndereco);
+
+      return res.status(201).json({ message: "Novo endereço adicionado!" });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+          message: "Erro interno",
+      });
+    }
+  }
+  async updateEndereco(req: Request, res: Response) {
+    // const { usuarioId, enderecoId } = req.params;
+    const { usuarioId, enderecoId, cep, endereco, referencia } = req.body;
+
+    try {
+        const usuario = await userRepositorie.findOne({ where: { id: parseInt(usuarioId, 10) }, relations: ["enderecos"] });
+        if (!usuario) {
+          return res.status(404).json({ message: "Usuário não encontrado!" });
+        }
+
+        const enderecoParaAtualizar = await enderecoUsuarioRepositorie.findOne({ where: { id: parseInt(enderecoId, 10), usuario: usuario } });
+        if (!enderecoParaAtualizar) {
+          return res.status(404).json({ message: "Endereço não encontrado!" });
+        }
+
+        if (!cep || !endereco || !referencia) {
+          return res.status(400).json({ message: "Todos os campos são obrigatórios!" });
+        }
+
+        enderecoParaAtualizar.cep = cep;
+        enderecoParaAtualizar.endereco = endereco;
+        enderecoParaAtualizar.referencia = referencia;
+
+        await enderecoUsuarioRepositorie.save(enderecoParaAtualizar);
+
+        return res.status(200).json({ message: "Endereço atualizado com sucesso!" });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Erro interno" });
+    }
+  }
+
+  async deleteEndereco(req: Request, res: Response) {
+    const { usuarioId, enderecoId } = req.body;
+
+    try {
+        const usuario = await userRepositorie.findOne({ where: { id: parseInt(usuarioId, 10) }, relations: ["enderecos"] });
+        if (!usuario) {
+            return res.status(404).json({ message: "Usuário não encontrado!" });
+        }
+
+        const enderecoParaDeletar = await enderecoUsuarioRepositorie.findOne({ where: { id: parseInt(enderecoId, 10), usuario: usuario } });
+        if (!enderecoParaDeletar) {
+            return res.status(404).json({ message: "Endereço não encontrado!" });
+        }
+
+        await enderecoUsuarioRepositorie.remove(enderecoParaDeletar);
+
+        return res.status(200).json({ message: "Endereço deletado com sucesso!" });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Erro interno" });
+    }
+  }
+
+  
 
     async contatos(req: Request, res: Response){
       try{
-          const contatos = await userRepositorie.find();
+          const contatos = await userRepositorie.find({relations: ["enderecos"] });
           res.json({
            
             groups: contatos.map((contato) => {
@@ -143,6 +275,7 @@ export class UsuarioController {
     async delete(req: Request, res: Response) {
         try {
             const id = parseInt(req.params.id, 10);
+            await enderecoUsuarioRepositorie.delete({usuario: {id:id}})
             const deleted = await userRepositorie.delete({ id:id })
             if (deleted.affected === 0) {
             return res.status(404).json({ message: "Usuario não encontrado" })
