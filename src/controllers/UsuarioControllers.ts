@@ -213,6 +213,23 @@ export class UsuarioController {
       }
   }
 
+  async usuarioId(req: Request, res: Response){
+    const id = parseInt(req.params.id, 10);
+    try{
+        const contatos = await userRepositorie.find({where: { id: id }, relations: ["enderecos"] });
+       
+        if (contatos.length > 0) {
+          const contatosSemDadosSensíveis = contatos.map(({ senha, ...contato }) => contato);
+          res.json(contatosSemDadosSensíveis[0]);
+      } else {
+          res.status(404).json({ message: "Usuário não encontrado" });
+      }
+    } catch(error) {
+        console.log(error);
+        return res.status(500).json({message: "Erro no servidor"})
+    }
+  }
+
 
     async login(req: Request, res: Response) {
 
