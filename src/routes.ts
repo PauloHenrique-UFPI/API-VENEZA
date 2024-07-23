@@ -32,6 +32,7 @@ routes.delete('/deletar-usuario/:id', authMiddleware, new UsuarioController().de
 routes.post('/esqueci', new UsuarioController().enviarEmailRedefinicao)
 routes.post('/trocarSenha', new UsuarioController().resetarSenha)
 routes.put('/alterarDados-usuario/:id', authMiddleware, new UsuarioController().alterarUsuario)
+routes.get('/usuarios-tipo/', authMiddleware, new UsuarioController().usuariosTipo)
 
 //Rotas de enderecos
 routes.post('/adicionar-endereco/:id', authMiddleware, new UsuarioController().createEndereco)
@@ -46,6 +47,8 @@ routes.get('/usuario-pedido/:id', authMiddleware, new PedidoController().pedidos
 routes.put('/alterar-pedido/:id', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().alter)
 routes.delete('/deletar-pedido/:id', authMiddleware, new PedidoController().delete)
 routes.get('/imprimir-pedido/:id', authMiddleware, new ImprimirControllers().imprimirPedido)
+routes.put('/addpizza-carrinho/:id', authMiddleware, new PedidoController().addPizzaCarrinho)
+routes.put('/aprovar-carrinho/:id', authMiddleware, new PedidoController().aprovarCarrinho)
 
 //Status do pedido
 routes.put('/aceitar-pedido/:id', authMiddleware, new StatusPedidoController().aceitaPedido) // pedido aceito

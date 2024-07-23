@@ -355,6 +355,25 @@ export class UsuarioController {
             });
         }
     }
+
+    async usuariosTipo(req: Request, res: Response){
+      const { tipo} = req.body;
+      if(!Object.values(UsuariosTipo).includes(tipo)){
+        return res.status(404).json({ message: `Pedido com ID ${tipo} não encontrado` });
+      }
+      try {
+        const usuarios = await userRepositorie.find({where: {usuarioTipo: tipo}})
+        res.json({
+           
+          groups: usuarios
+        })
+      } catch (error) {
+        console.log(error);
+            return res.status(500).json({
+                message: 'Erro interno',
+            });
+      }
+    }
   
     async resetarSenha(req: Request, res: Response) {
       try {

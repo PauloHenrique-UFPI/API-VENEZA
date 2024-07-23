@@ -1,4 +1,5 @@
 export enum StatusPedido {
+    CARRINHO = 'carrinho',
     PENDENTE = 'pendente',
     CANCELADO = 'cancelado',
     ACEITO = 'aceito',
