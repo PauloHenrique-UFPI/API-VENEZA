@@ -108,7 +108,7 @@ export class PizzaController {
                         return res.status(400).json({ message: `Preço para o tamanho ${size} é obrigatório` });
                     }
                 }
-                pizza.precos = precos;
+                pizza.precos = precosJson;
             }
             if (categoria) {
                 // Verifica se a categoria é válida
