@@ -142,7 +142,7 @@ export class PedidoController {
         try {
             const bebidas2 = bebidas.map((id: number) => ({ id }))
             const novoPedido = pedidoRepositorie.create({
-                status: StatusPedido.PENDENTE,
+                status: StatusPedido.CARRINHO,
                 precoTotal: precoTotalPedido,
                 pizzas: pedidoPizzas,
                 bebidas: bebidas2,
@@ -177,6 +177,109 @@ export class PedidoController {
             });   
         }
 
+    }
+
+    async addPizzaCarrinho(req: Request, res: Response){
+        const id = parseInt(req.params.id, 10);
+        const {pizzas} = req.body;
+        
+        const pedido = await pedidoRepositorie.findOne({ where: { id: id }, relations: ["pizzas", "bebidas"] });
+        if (pedido?.status != StatusPedido.CARRINHO){
+            return res.status(404).json({ message: `Pedido com ID ${id} não esta no carrinho` });
+        }
+        if (!pedido) {
+            return res.status(404).json({ message: `Pedido com ID ${id} não encontrado` });
+        }
+        try {
+    
+    
+            if (!pedido) {
+                return res.status(404).json({ message: `Carrinho com ID ${id} não encontrado` });
+            }
+    
+            // Se houver pizzas para atualizar
+            if (pizzas) {
+    
+                // Adiciona as novas pizzas ao pedido
+                for (const pizzaData of pizzas) {
+                    const { pizzaIds, bordaId, ingredientesAdicionaisIds, tamanho } = pizzaData;
+    
+                    let precoTotalPizza = 0;
+    
+                    for (const pizzaId of pizzaIds) {
+                        const pizza = await pizzaRepositorie.findOne({ where: { id: pizzaId } });
+                        if (!pizza) {
+                            return res.status(404).json({ message: `Pizza com ID ${pizzaId} não encontrada` });
+                        }
+    
+                        if (pizza.precos[tamanho as Tamanho] !== undefined) {
+                            precoTotalPizza += pizza.precos[tamanho as Tamanho] / pizzaIds.length;
+                        } else {
+                            return res.status(400).json({ message: `Tamanho '${tamanho}' não é válido para esta pizza` });
+                        }
+                    }
+    
+                    // Busca a borda, se houver
+                    let borda = undefined;
+                    if (bordaId) {
+                        borda = await bordaRepositorie.findOne(bordaId);
+                        if (!borda) {
+                            return res.status(404).json({ message: `Borda com ID ${bordaId} não encontrada` });
+                        }
+                        // Adiciona o preço da borda ao total da pizza
+                        precoTotalPizza += borda.preco;
+                    }
+    
+                    // Busca os ingredientes adicionais, se houver
+                    let ingredientesAdicionais: IngredienteAdicional[] = [];
+                    if (ingredientesAdicionaisIds && ingredientesAdicionaisIds.length > 0) {
+                        ingredientesAdicionais = await ingredienteAdicionalRepositorie.findByIds(ingredientesAdicionaisIds);
+                    }
+    
+                    // Cria a entidade PedidoPizza e a associa ao pedido com as informações atualizadas
+                    const pedidoPizza = pedidoPizzaRepositorie.create({
+                        sabores: pizzaIds.map((id: number) => ({ id })),
+                        borda: borda,
+                        ingredientesAdicionais: ingredientesAdicionais,
+                        precoTotal: precoTotalPizza,
+                        tamanho: tamanho // Adicione o tamanho aqui
+                    });
+    
+                    pedido.pizzas.push(pedidoPizza);
+                }
+            }
+            // Salva o pedido com as novas bebidas e pizzas
+            const carrinho = await pedidoRepositorie.save(pedido);
+    
+            return res.json({ message: "Pedido atualizado com sucesso",carrinho });
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+                message: "Erro interno",
+            });
+        }
+    }
+
+    async aprovarCarrinho(req: Request, res: Response){
+        const id = parseInt(req.params.id, 10);
+
+        const pedido = await pedidoRepositorie.findOne({ where: { id: id }, relations: ["pizzas", "bebidas"] });
+
+        if (pedido?.status != StatusPedido.CARRINHO){
+            return res.status(404).json({ message: `Pedido com ID ${id} não está no carrinho` });
+        }
+        try {
+            pedido.status = StatusPedido.PENDENTE;
+            pedido.dataHora = new Date()
+            await pedidoRepositorie.save(pedido);
+    
+            return res.json({ message: "Pedido atualizado com sucesso" });
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({
+                message: "Erro interno",
+            });
+        }
     }
 
     async alter(req: Request, res: Response) {
