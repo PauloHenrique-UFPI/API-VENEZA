@@ -47,7 +47,7 @@ routes.get('/unico-pedido/:id', authMiddleware, new PedidoController().pedidoId)
 routes.get('/usuario-pedido/:id', authMiddleware, new PedidoController().pedidosUsuarioId)
 routes.put('/alterar-pedido/:id', authMiddleware, Multer.single('img'), uploadImage, new PedidoController().alter)
 routes.delete('/deletar-pedido/:id', authMiddleware, new PedidoController().delete)
-routes.get('/imprimir-pedido/:id', authMiddleware, new ImprimirControllers().imprimirPedido)
+routes.get('/imprimir-pedido/:id', new ImprimirControllers().imprimirPedido)
 routes.put('/addpizza-carrinho/:id', authMiddleware, new PedidoController().addPizzaCarrinho)
 routes.put('/aprovar-carrinho/:id', authMiddleware, new PedidoController().aprovarCarrinho)
 
