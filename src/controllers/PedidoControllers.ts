@@ -417,8 +417,8 @@ export class PedidoController {
                 }: null,
                 descricao: pedido.descricao,
                 usuario: pedido.usuario ? {
-                    id: pedido.usuario.id
-                    email: pedido.usuario.email,
+                    id: pedido.usuario.id,
+                    email: pedido.usuario.email
                     // endereco: pedido.usuario.endereco,
                     // cep: pedido.usuario.cep
                 } : null,
