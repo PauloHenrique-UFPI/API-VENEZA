@@ -164,10 +164,10 @@ export class PedidoController {
             }
             
             // console.log(novoPedido)
-            await pedidoRepositorie.save(novoPedido);
+            const novoCarrinho = await pedidoRepositorie.save(novoPedido);
             return res.json({
                 message: "Pedido cadastrado com sucesso !",
-                novoPedido
+                novoCarrinho
             });
 
         } catch (error) {
@@ -190,6 +190,7 @@ export class PedidoController {
         if (!pedido) {
             return res.status(404).json({ message: `Pedido com ID ${id} não encontrado` });
         }
+        const promo = await promocaoRepositorie.findOne({where: {pizza: {id:id}}})
         try {
     
     
@@ -244,11 +245,13 @@ export class PedidoController {
                         precoTotal: precoTotalPizza,
                         tamanho: tamanho // Adicione o tamanho aqui
                     });
-    
+                    //Adiciona o preco da pizza
                     pedido.pizzas.push(pedidoPizza);
+                    //Adicionar o preco da pizza no pedido
+                    pedido.precoTotal += precoTotalPizza;
                 }
             }
-            // Salva o pedido com as novas bebidas e pizzas
+            // Salva o pedidoPizza com as novas bebidas e pizzas
             const carrinho = await pedidoRepositorie.save(pedido);
     
             return res.json({ message: "Pedido atualizado com sucesso",carrinho });

@@ -337,24 +337,72 @@ export class UsuarioController {
         }
     }
 
-    async usuariosTipo(req: Request, res: Response){
-      const { tipo} = req.body;
-      if(!Object.values(UsuariosTipo).includes(tipo)){
-        return res.status(404).json({ message: `Pedido com ID ${tipo} não encontrado` });
+    async usuariosTipo(req: Request, res: Response) {
+      const { tipo } = req.body;
+      
+      if (!Object.values(UsuariosTipo).includes(tipo)) {
+          return res.status(404).json({ message: `Tipo de usuário ${tipo} não encontrado` });
       }
+  
       try {
-        const usuarios = await userRepositorie.find({where: {usuarioTipo: tipo}})
-        res.json({
-           
-          groups: usuarios
-        })
+          const usuarios = await userRepositorie.find({
+              where: { usuarioTipo: tipo },
+              relations: ["enderecos"]
+          });
+  
+          const response = usuarios.map(usuario => ({
+              id: usuario.id,
+              nome: usuario.nome,
+              enderecos: usuario.enderecos ? usuario.enderecos.map(endereco => ({
+                  id: endereco.id,
+                  cep: endereco.cep,
+                  referencia: endereco.referencia,
+                  bairo: endereco.bairo
+              })) : []
+          }));
+  
+          res.json({ groups: response });
       } catch (error) {
-        console.log(error);
-            return res.status(500).json({
-                message: 'Erro interno',
-            });
+          console.log(error);
+          return res.status(500).json({ message: 'Erro interno' });
       }
     }
+
+    async usuarioId(req: Request, res: Response){
+      const id = parseInt(req.params.id, 10);
+
+    try {
+        const usuario = await userRepositorie.findOne({
+            where: { id: id },
+            relations: ["enderecos"]
+        });
+        if (!usuario) {
+          return res.status(404).json({ message: `Tipo de usuário ${id} não encontrado` });
+        }
+
+        const response = {
+          id: usuario.id,
+          nome: usuario.nome,
+          email: usuario.email,
+          telefone: usuario.telefone,
+          dataNascimento: usuario.dataNascimento,
+          usuarioTipo: usuario.usuarioTipo,
+          enderecos: usuario.enderecos ? usuario.enderecos.map(endereco => ({
+              id: endereco.id,
+              cep: endereco.cep,
+              endereco: endereco.endereco,
+              referencia: endereco.referencia,
+          })) : []
+      };
+
+        res.json({ groups: response });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Erro interno' });
+    }
+
+    }
+
   
     async resetarSenha(req: Request, res: Response) {
       try {
