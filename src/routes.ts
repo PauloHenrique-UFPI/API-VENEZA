@@ -32,7 +32,8 @@ routes.delete('/deletar-usuario/:id', authMiddleware, new UsuarioController().de
 routes.post('/esqueci', new UsuarioController().enviarEmailRedefinicao)
 routes.post('/trocarSenha', new UsuarioController().resetarSenha)
 routes.put('/alterarDados-usuario/:id', authMiddleware, new UsuarioController().alterarUsuario)
-routes.get('/usuarios-tipo/', authMiddleware, new UsuarioController().usuariosTipo)
+routes.post('/usuarios-tipo', authMiddleware, new UsuarioController().usuariosTipo)
+routes.get('/unico-usuario/:id', authMiddleware, new UsuarioController().usuarioId)
 
 //Rotas de enderecos
 routes.post('/adicionar-endereco/:id', authMiddleware, new UsuarioController().createEndereco)
